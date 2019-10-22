@@ -1,0 +1,58 @@
+class SQLITE:
+    """
+    Para ver el sqlite se puede en la url: https://inloop.github.io/sqlite-viewer/
+    """
+    import sqlite3
+    import pandas as pd
+    import os.path
+    def __init__(self, baseDatos, tabla):        
+        self.tablaDB = tabla
+        self.database = baseDatos
+        
+    def AbrirConexionDB(self):
+        self.conn = self.sqlite3.connect(self.database)
+        self.c = self.conn.cursor()
+        
+    def CrearTabla(self):        
+        if not self.os.path.isfile(self.database):
+            try:
+                self.AbrirConexionDB()
+                self.c.execute("CREATE TABLE " + self.tablaDB + " (id text, vector text)")            
+                self.CerrarConexionDB()
+            except:
+                pass
+            
+    def InsertarDatos(self, valor):
+        #print("Antes de insertar se debe verificar que el dato a insertar ya no exista.")        
+        idActual = len(self.LeerDB())
+        self.AbrirConexionDB()
+        self.c.execute("INSERT INTO " + self.tablaDB + " VALUES ('" + str(idActual + 1) + "','" + valor + "')")
+        self.CerrarConexionDB()
+        return idActual+1
+    
+    def CerrarConexionDB(self):
+        try:
+            self.conn.commit()
+            self.conn.close()
+            self.c.close()
+        except:
+            pass
+    
+    def LeerDB(self):
+        self.AbrirConexionDB()
+        df = self.pd.read_sql("select * from " + self.tablaDB, self.conn)
+        self.CerrarConexionDB() 
+        #print(len(df))
+        return df
+    
+    def BorrarLinea(self, id):
+        pass
+    
+    def BorrarTabla(self):
+        pass
+    
+    def actualizarCampo(self):
+        pass
+        
+        
+

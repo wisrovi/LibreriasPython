@@ -4,7 +4,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 user = "wisrovi.rodriguez@gmail.com"
-password = "FC5JB6EM"
+password = "password"
 
 remitente = "WISROVI <" + "wisrovi.rodriguez@gmail.com" + ">"
 destinatario = "ivAdventure <" + "wisrovi.rodriguez@gmail.com" + ">"

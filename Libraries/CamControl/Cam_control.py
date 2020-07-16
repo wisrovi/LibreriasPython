@@ -1,11 +1,9 @@
-from Util.Count_FPS import Count_FPS
-import cv2
-
-
-
 class Cam_control():
     import os
-    fps = Count_FPS()
+    import cv2
+    from imutils.video import FPS
+
+    fps = None
     writer = None
     pathSaveVideo = None
     cam_correct = False
@@ -21,13 +19,22 @@ class Cam_control():
         "hershey": (cv2.FONT_HERSHEY_SIMPLEX, 0.5, colores["rojo"], 2)
     }
 
-    def __init__(self, rutaCamara=None, usarWebCam=True):
+    def __init__(self):
+        self.fps = self.FPS().start()
+
+    def ReadImage(self, imagePath=None):
+        image = None
+        if imagePath is not None:
+            image = self.cv2.imread(imagePath)
+        return image
+
+    def ConfigCam(self, rutaCamara=None, usarWebCam=True):
         if usarWebCam:
-            self.vcap = cv2.VideoCapture(0)
+            self.vcap = self.cv2.VideoCapture(0)
             self.cam_correct = True
         else:
             if rutaCamara is not None:
-                self.vcap = cv2.VideoCapture(rutaCamara) # puede ser RTSP_route o video_route
+                self.vcap = self.cv2.VideoCapture(rutaCamara) # puede ser RTSP_route o video_route
                 self.cam_correct = True
 
     def __CreatePathIfNotExist(self, path=None):
@@ -45,12 +52,12 @@ class Cam_control():
             self.__CreatePathIfNotExist(namePathVideo)
             if self.writer is None:
                 namePathVideo = self.pathSaveVideo + "/" + nameFileVideo
-                fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+                fourcc = self.cv2.VideoWriter_fourcc(*"MJPG")
                 if frame is not None:
-                    self.writer = cv2.VideoWriter(namePathVideo, fourcc, 25,(frame.shape[1], frame.shape[0]), True)
+                    self.writer = self.cv2.VideoWriter(namePathVideo, fourcc, 25,(frame.shape[1], frame.shape[0]), True)
                 else:
                     if self.image is not None:
-                        self.writer = cv2.VideoWriter(namePathVideo, fourcc, 25,(self.image.shape[1], self.image.shape[0]), True)
+                        self.writer = self.cv2.VideoWriter(namePathVideo, fourcc, 25,(self.image.shape[1], self.image.shape[0]), True)
             else:
                 if frame is not None:
                     self.writer.write(frame)
@@ -63,17 +70,17 @@ class Cam_control():
             ret, self.image = self.vcap.read()
             if self.image is not None:
                 if procesarCaptura:
-                    self.fps.Update()
+                    self.fps.update()
                 else:
                     self.image = None
             return self.image
 
     def DetenerCamara(self):
         if self.cam_correct:
-            self.fps.Stop()
-            resumeFPS = self.fps.Resume()
+            self.fps.stop()
+            resumeFPS = (  self.fps.elapsed(), self.fps.fps()  )
             self.vcap.release()
-            cv2.destroyAllWindows()  # Destruyo la ventana
+            self.cv2.destroyAllWindows()  # Destruyo la ventana
             if self.writer is not None:
                 self.__CreatePathIfNotExist()
                 file = open(self.pathSaveVideo + "/" + "infoVideoOut.txt", "w")
@@ -87,10 +94,10 @@ class Cam_control():
     def Usar_MOVIDIUS(self, net=None):
         if self.cam_correct:
             if net is not None:
-                net.setPreferableTarget(cv2.dnn.DNN_TARGET_MYRIAD)
+                net.setPreferableTarget(self.cv2.dnn.DNN_TARGET_MYRIAD)
 
     def search_key_finish_process(self):
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if self.cv2.waitKey(1) & 0xFF == ord('q'):
             return True
         return False
 
@@ -98,17 +105,17 @@ class Cam_control():
         if self.image is not None:
             if ponerFirma:
                 self.PonerTextoImagen(texto="www.wisrovi.com",posicion=(self.image.shape[1] - 135, self.image.shape[0] - 10))
-            cv2.imshow(nameWindow, self.image)
+            self.cv2.imshow(nameWindow, self.image)
     def ResizeImage(self, widthDream=720):
         scale_percent = int(widthDream * 100 / self.image.shape[1])
         width = int(self.image.shape[1] * scale_percent / 100)
         height = int(self.image.shape[0] * scale_percent / 100)
         dsize = (width, height)
-        self.image = cv2.resize(self.image, dsize)
+        self.image = self.cv2.resize(self.image, dsize)
 
     def GetBlurry(self): # nivel borrosa de la imagen
-        gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
-        fm = cv2.Laplacian(gray, cv2.CV_64F).var()
+        gray = self.cv2.cvtColor(self.image, self.cv2.COLOR_BGR2GRAY)
+        fm = self.cv2.Laplacian(gray, self.cv2.CV_64F).var()
         return float("{:.2f}".format(fm))
 
     def PonerTextoImagen(self, texto="prueba",
@@ -117,7 +124,7 @@ class Cam_control():
                             escalaLetra=tiposLetra["hershey"][1],
                             colorLetra=tiposLetra["hershey"][2],
                             gruesoLetra = tiposLetra["hershey"][3]):
-        cv2.putText(self.image,
+        self.cv2.putText(self.image,
                     texto,
                     posicion,
                     tipoLetra,

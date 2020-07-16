@@ -18,6 +18,16 @@ class Cam_control():
     tiposLetra = {  # tipo_letra, tamaño, color, grosor
         "hershey": (cv2.FONT_HERSHEY_SIMPLEX, 0.5, colores["rojo"], 2)
     }
+    resolucionCamara = {
+        "MIN" : (320,240),      #Mini
+        "BAS" : (640,480),      #Basic
+        "hd" : (1366,768),      #HD
+        "720p" : (1280,720),    #HD+
+        "1080p" : (1920,1080),  #full HD
+        "1440p" : (2560,1440),  #QHD o 2K
+        "UHD" : (3840,2160),
+        "8K" : (7680,4320)
+    }
 
     def __init__(self):
         self.fps = self.FPS().start()
@@ -28,9 +38,15 @@ class Cam_control():
             image = self.cv2.imread(imagePath)
         return image
 
-    def ConfigCam(self, rutaCamara=None, usarWebCam=True):
+    def ConfigCam(self, rutaCamara=None, usarWebCam=True, calidadWebCam="BAS", userRNA=False): # calidadWebCam = [MIN, BAS, hd, 720p, 1080p, 1440p, UHD, 8K]
         if usarWebCam:
             self.vcap = self.cv2.VideoCapture(0)
+            self.vcap.set(int(3), self.resolucionCamara[calidadWebCam][0]) 
+            self.vcap.set(int(4), self.resolucionCamara[calidadWebCam][1])
+            if userRNA:
+                self.vcap.set(int(5), 10)
+            else:
+                self.vcap.set(int(5), 32)
             self.cam_correct = True
         else:
             if rutaCamara is not None:
